@@ -259,15 +259,15 @@ def _create_temp_password_file(user, password, filename):
                 f.write(line)
                 continue
             if s_password.startswith('$'):
-                # Format is '$ID$SALT$PASSWORD$' where ID defines the
+                # Format is '$ID$SALT$HASH' where ID defines the
                 # ecnryption type.  We'll re-use that, and make a salt
                 # that's the same size as the old
-                salt_data = s_password.split('$')
-                # salt_data[0] will be '', [1] will be ID, [2] will be salt
-                salt = '$%s$%s$' % (salt_data[1],
-                        _make_salt(len(salt_data[2])))
+                salt_data = s_password[1:].split('$')
+                salt = '$%s$%s$' % (salt_data[0],
+                        _make_salt(len(salt_data[1])))
             else:
-                salt = _make_salt(2)
+                # Default to MD5 as a minimum level of compatibility
+                salt = '$1$%s$' % _make_salt(8)
             enc_pass = agentlib.encrypt_password(password, salt)
             f.write("%s:%s:%s" % (s_user, enc_pass, s_rest))
         f.close()
