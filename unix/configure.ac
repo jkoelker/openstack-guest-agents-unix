@@ -117,9 +117,9 @@ AC_CONFIG_FILES([Makefile
                  commands/Makefile
                  tests/Makefile
                  scripts/installer.sh
-                 scripts/nova-agent.init
-                 scripts/nova-agent.gentoo.init
-                 scripts/nova-agent.freebsd.init
+                 scripts/generic/nova-agent
+                 scripts/gentoo/nova-agent
+                 scripts/freebsd/nova-agent
                  ])
 
 AC_OUTPUT

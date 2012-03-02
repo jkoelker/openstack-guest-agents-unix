@@ -6,23 +6,21 @@ ACLOCAL_MFLAGS = -I m4
 SUBDIRS = lib src plugins commands tests
 
 EXTRA_DIST = install_libs.py install_modules.py nova-agent.py \
-			 run_tests.py patch_binary.py scripts/agent-smith
+			run_tests.py patch_binary.py scripts/agent-smith \
+			scripts/generic/nova-agent scripts/gentoo/nova-agent \
+			scripts/freebsd/nova-agent
 
 data_DATA = nova-agent.py
 
 nodist_noinst_DATA = agentlib.so \
 			scripts/installer.sh \
-			scripts/nova-agent.init \
-			scripts/nova-agent.gentoo.init \
-			scripts/nova-agent.freebsd.init
+			scripts/generic/nova-agent \
+			scripts/gentoo/nova-agent \
+			scripts/freebsd/nova-agent
 
-noinst_DATA = scripts/nova-agent.init.in \
-		scripts/nova-agent.gentoo.init.in \
-		scripts/nova-agent.freebsd.init.in
-
-etc_DATA = scripts/nova-agent.init \
-		scripts/nova-agent.gentoo.init \
-		scripts/nova-agent.freebsd.init
+noinst_DATA = scripts/generic/nova-agent.in \
+		scripts/gentoo/nova-agent.in \
+		scripts/freebsd/nova-agent.in
 
 agentlib.so:
 	    ln -s lib/.libs/agentlib.so agentlib.so
@@ -73,10 +71,12 @@ bintar: all
 	@$(MAKE) install DESTDIR=$(CURDIR)/${BINTARDIR}
 	@chmod -R go-rwx ${FULLBINTARDIR}/${datadir}
 	@cp $(top_srcdir)/scripts/agent-smith ${FULLBINTARDIR}/${prefix}/sbin/.
-	@cp $(top_srcdir)/scripts/installer.sh ${FULLBINTARDIR}/.
 	@chmod 700 ${FULLBINTARDIR}/${prefix}/sbin/agent-smith
+	@cp $(top_srcdir)/scripts/installer.sh ${FULLBINTARDIR}/.
 	@chmod 700 ${FULLBINTARDIR}/installer.sh
-	@chmod 700 ${FULLBINTARDIR}/${etcdir}/*.init
+	@install -D -m 700 $(top_srcdir)/scripts/generic/nova-agent ${FULLBINTARDIR}/${etcdir}/generic/nova-agent
+	@install -D -m 700 $(top_srcdir)/scripts/gentoo/nova-agent ${FULLBINTARDIR}/${etcdir}/gentoo/nova-agent
+	@install -D -m 700 $(top_srcdir)/scripts/freebsd/nova-agent ${FULLBINTARDIR}/${etcdir}/freebsd/nova-agent
 	@chown -R 0:0 ${FULLBINTARDIR}
 # agent-smith requires that we don't have a subdir in the tar
 # once agent-smith is dead, we can use this
