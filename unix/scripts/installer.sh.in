@@ -30,9 +30,14 @@ umask 077
 my_dir=`dirname $0`
 
 add_to_startup() {
-    if [ -f /usr/sbin/update-rc.d ] ; then
+    if [ -f /sbin/insserv -o -f /usr/sbin/update-rc.d ] ; then
         # Debian style
-        /usr/sbin/update-rc.d nova-agent start 20 2 3 4 5 . stop 20 0 1 6 . > /dev/null 2>&1
+        if [ -f /sbin/insserv ]; then
+            # Debian >= 6.0
+            /sbin/insserv nova-agent > /dev/null 2>&1
+        else
+            /usr/sbin/update-rc.d nova-agent start 20 2 3 4 5 . stop 20 0 1 6 . > /dev/null 2>&1
+        fi
     elif [ -f /sbin/chkconfig ] ; then
         # Red Hat style
         /sbin/chkconfig nova-agent on > /dev/null 2>&1
