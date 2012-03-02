@@ -46,18 +46,20 @@ NETWORK_FILE = "/etc/conf.d/net"
 
 
 def configure_network(hostname, interfaces):
+    update_files = {}
+
     # Figure out if this system is running OpenRC
     if os.path.islink('/sbin/runscript'):
         data, ifaces = _get_file_data_openrc(interfaces)
     else:
+        # Generate new /etc/resolv.conf file
+        filepath, data = commands.network.get_resolv_conf(interfaces)
+        if data:
+            update_files[filepath] = data
+
         data, ifaces = _get_file_data_legacy(interfaces)
 
-    update_files = {NETWORK_FILE: data}
-
-    # Generate new /etc/resolv.conf file
-    filepath, data = commands.network.get_resolv_conf(interfaces)
-    if data:
-        update_files[filepath] = data
+    update_files[NETWORK_FILE] = data
 
     # Generate new hostname file
     data = get_hostname_file(hostname)
@@ -184,6 +186,8 @@ def _get_file_data_openrc(interfaces):
         gateway4 = interface['gateway4']
         gateway6 = interface['gateway6']
 
+        dns = interface['dns']
+
         iface_data = []
 
         for ip in ip4s:
@@ -207,6 +211,9 @@ def _get_file_data_openrc(interfaces):
 
         if route_data:
             network_data += 'routes_%s="%s"\n' % (ifname, '\n'.join(route_data))
+
+        if dns:
+            network_data += 'dns_servers_%s="%s"\n' % (ifname, '\n'.join(dns))
 
         ifaces.add(ifname)
 
