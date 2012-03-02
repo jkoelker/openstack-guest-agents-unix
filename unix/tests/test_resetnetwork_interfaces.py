@@ -328,7 +328,8 @@ class TestInterfacesUpdates(agent_test.TestCase):
             'modules="ifconfig"',
             '',
             'config_eth0="192.0.2.42 netmask 255.255.255.0"',
-            'routes_eth0="default via 192.0.2.1"']) + '\n')
+            'routes_eth0="default via 192.0.2.1"',
+            'dns_servers_eth0="192.0.2.2"']) + '\n')
 
     def test_gentoo_openrc_ipv6(self):
         """Test setting public IPv6 for Gentoo OpenRC networking"""
@@ -345,7 +346,8 @@ class TestInterfacesUpdates(agent_test.TestCase):
             'modules="ifconfig"',
             '',
             'config_eth0="2001:db8::42/96"',
-            'routes_eth0="default via 2001:db8::1"']) + '\n')
+            'routes_eth0="default via 2001:db8::1"',
+            'dns_servers_eth0="2001:db8::2"']) + '\n')
 
     def test_suse_ipv4(self):
         """Test setting public IPv4 for SuSE networking"""
