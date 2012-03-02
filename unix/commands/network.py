@@ -145,8 +145,10 @@ class NetworkCommands(commands.CommandBase):
 
         try:
             hostname = xs_handle.read(XENSTORE_HOSTNAME_PATH)
+            logging.info('hostname: %r (from xenstore)' % hostname)
         except pyxenstore.NotFoundError:
             hostname = DEFAULT_HOSTNAME
+            logging.info('hostname: %r (default)' % hostname)
 
         interfaces = []
 
@@ -157,7 +159,9 @@ class NetworkCommands(commands.CommandBase):
 
         for entry in entries:
             data = xs_handle.read(XENSTORE_INTERFACE_PATH + '/' + entry)
-            interfaces.append(anyjson.deserialize(data))
+            data = anyjson.deserialize(data)
+            interfaces.append(data)
+            logging.info('interface %s: %r' % (entry, data))
 
         del xs_handle
 
