@@ -47,6 +47,7 @@ import platform
 import pyxenstore
 import re
 import socket
+import struct
 import time
 from ctypes import *
 
@@ -65,6 +66,10 @@ XENSTORE_HOSTNAME_PATH = "vm-data/hostname"
 DEFAULT_HOSTNAME = ''
 HOSTS_FILE = '/etc/hosts'
 RESOLV_CONF_FILE = '/etc/resolv.conf'
+BROADCAST_MAC = struct.pack("BBBBBB", 255, 255, 255, 255, 255, 255)
+ARP_HEADER = struct.pack('!hhBBh', 1, 0x0800, 6, 4, 2)
+ARP_ETHERNET_TYPE = 0x0806
+ARP_TYPE = struct.pack("!h", ARP_ETHER_TYPE)
 
 if os.uname()[0].lower() == 'freebsd':
     INTERFACE_LABELS = {"public": "xn0",
@@ -92,6 +97,22 @@ NETMASK_TO_PREFIXLEN = {
     '192.0.0.0': 2,        '128.0.0.0': 1,
     '0.0.0.0': 0,
 }
+
+
+def _send_arp(ifname, address):
+    logging.info('Sending gratuitous arp on interface %s' % ifname)
+    try:
+        s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW)
+        s.bind((ifname, ARP_ETHERNET_TYPE))
+        src = s.getsockname()[4]
+        arp = ''.join([ARP_HEADER, src, socket.inet_aton(address),
+                       src, socket.inet_aton(address)])
+        frame = ''.join([BROADCAST_MAC, src, ARP_TYPE, arp])
+        s.send(frame)
+        s.close()
+    except (socket.error, Exception):
+        logging.exception("Gratuitous arp failed for interface "
+                          "%s" % ifname)
 
 
 class NetworkCommands(commands.CommandBase):
@@ -151,6 +172,7 @@ class NetworkCommands(commands.CommandBase):
             logging.info('hostname: %r (default)' % hostname)
 
         interfaces = []
+        arps = []
 
         try:
             entries = xs_handle.entries(XENSTORE_INTERFACE_PATH)
@@ -247,6 +269,9 @@ class NetworkCommands(commands.CommandBase):
                 # Rename 'netmask' to 'prefixlen' to be more accurate
                 ip['prefixlen'] = ip.pop('netmask')
 
+            if ip4s:
+                arps.append((ifname, ip4s[0]['address']))
+
             ifconfig['ip4s'] = ip4s
             ifconfig['ip6s'] = ip6s
 
@@ -279,7 +304,11 @@ class NetworkCommands(commands.CommandBase):
         #if not gateway4 and not gateway6:
         #    raise RuntimeError('No gateway found for public interface')
 
-        return os_mod.network.configure_network(hostname, config)
+        result = os_mod.network.configure_network(hostname, config)
+        if result[0] == 0:
+            for arp in arps:
+                _send_arp(*arp)
+        return result
 
 
 def _get_etc_hosts(infile, interfaces, hostname):
