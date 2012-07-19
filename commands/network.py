@@ -444,8 +444,7 @@ def move_files(update_files, remove_files=None):
 
     for filepath in remove_files:
         logging.info("moving %s (%s)" % (filepath, bak_suffix))
-
-        os.rename(filepath, '%s.%s' % (filepath, bak_file))
+        os.rename(filepath, '%s.%s' % (filepath, bak_suffix))
 
 
 def update_files(update_files, remove_files=None):
