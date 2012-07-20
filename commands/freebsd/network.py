@@ -79,15 +79,16 @@ def configure_network(hostname, interfaces):
         return (500, "Couldn't restart IPv4 networking: %d" % status)
 
     # Restart network
-    logging.debug('executing /etc/rc.d/network_ipv6 restart')
-    p = subprocess.Popen(["/etc/rc.d/network_ipv6", "restart"],
-            stdin=pipe, stdout=pipe, stderr=pipe, env={})
-    logging.debug('waiting on pid %d' % p.pid)
-    status = os.waitpid(p.pid, 0)[1]
-    logging.debug('status = %d' % status)
+    if os.path.exists("/etc/rc.d/network_ipv6"):
+        logging.debug('executing /etc/rc.d/network_ipv6 restart')
+        p = subprocess.Popen(["/etc/rc.d/network_ipv6", "restart"],
+                stdin=pipe, stdout=pipe, stderr=pipe, env={})
+        logging.debug('waiting on pid %d' % p.pid)
+        status = os.waitpid(p.pid, 0)[1]
+        logging.debug('status = %d' % status)
 
-    if status != 0:
-        return (500, "Couldn't restart IPv6 networking: %d" % status)
+        if status != 0:
+            return (500, "Couldn't restart IPv6 networking: %d" % status)
 
     return (0, "")
 
