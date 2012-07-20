@@ -74,9 +74,13 @@ bintar: all
 	@chmod 700 ${FULLBINTARDIR}/${prefix}/sbin/agent-smith
 	@cp $(top_srcdir)/scripts/installer.sh ${FULLBINTARDIR}/.
 	@chmod 700 ${FULLBINTARDIR}/installer.sh
-	@install -D -m 700 $(top_srcdir)/scripts/generic/nova-agent ${FULLBINTARDIR}/${etcdir}/generic/nova-agent
-	@install -D -m 700 $(top_srcdir)/scripts/gentoo/nova-agent ${FULLBINTARDIR}/${etcdir}/gentoo/nova-agent
-	@install -D -m 700 $(top_srcdir)/scripts/freebsd/nova-agent ${FULLBINTARDIR}/${etcdir}/freebsd/nova-agent
+	@mkdir -m 0700 ${FULLBINTARDIR}/${etcdir}
+	@mkdir -m 0700 ${FULLBINTARDIR}/${etcdir}/generic
+	@mkdir -m 0700 ${FULLBINTARDIR}/${etcdir}/gentoo
+	@mkdir -m 0700 ${FULLBINTARDIR}/${etcdir}/freebsd
+	@install -m 700 $(top_srcdir)/scripts/generic/nova-agent ${FULLBINTARDIR}/${etcdir}/generic/nova-agent
+	@install -m 700 $(top_srcdir)/scripts/gentoo/nova-agent ${FULLBINTARDIR}/${etcdir}/gentoo/nova-agent
+	@install -m 700 $(top_srcdir)/scripts/freebsd/nova-agent ${FULLBINTARDIR}/${etcdir}/freebsd/nova-agent
 	@chown -R 0:0 ${FULLBINTARDIR}
 # agent-smith requires that we don't have a subdir in the tar
 # once agent-smith is dead, we can use this

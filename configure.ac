@@ -21,6 +21,8 @@ AS_IF([test "$ac_coverage" = "yes"],
 
 AC_PROG_CC
 AM_PROG_CC_C_O
+# Automake 1.12 requires AM_PROG_AR, but older versions don't know it.
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_LIBTOOL
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -55,6 +57,7 @@ if test "$PYTHON_CFLAGS" = "" -a "$PYTHON_LIB" = ""; then
     fi
 fi
 
+CFLAGS="$CFLAGS -fno-strict-aliasing"
 # Make sure to add this, so we don't need to manually add it on FreeBSD
 LDFLAGS="$LDFLAGS -L/usr/local/lib"
 
