@@ -185,7 +185,8 @@ def _create_rcconf_file(infile, interfaces, hostname):
         print >> outfile, 'defaultrouter="%s"' % gateway4
 
     if gateway6:
-        print >> outfile, 'ipv6_defaultrouter="%s"' % gateway6
+        print >> outfile, 'ipv6_defaultrouter="%s%%%s"' % \
+                (gateway6, 'xn0')
 
     outfile.seek(0)
     return outfile.read()
