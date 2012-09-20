@@ -24,12 +24,15 @@ import base64
 import binascii
 import logging
 import os
+import platform
 import subprocess
-import time
 
 from Crypto.Cipher import AES
 import agentlib
 import commands
+
+import nicira.password
+
 
 # This is to support older python versions that don't have hashlib
 try:
@@ -37,7 +40,7 @@ try:
 except ImportError:
     import md5
 
-    class hashlib(object):
+    class hashlib(object):  # NOQA
         """Fake hashlib module as a class"""
 
         @staticmethod
@@ -72,6 +75,25 @@ class PasswordCommands(commands.CommandBase):
         self.base = 5
         self.kwargs = {}
         self.kwargs.update(kwargs)
+
+    @staticmethod
+    def detect_os():
+        """
+        Return the Linux Dristibution or other OS name
+        """
+        translations = {"nicira": nicira}
+
+        system = os.uname()[0]
+        if system == "Linux":
+            system = platform.linux_distribution(full_distribution_name=0)[0]
+            if os.path.exists("/etc/nicira"):
+                system = "nicira"
+
+            if not system:
+                return None
+
+            system = system.lower()
+            return translations.get(system)
 
     def _mod_exp(self, num, exp, mod):
         result = 1
@@ -200,7 +222,12 @@ class PasswordCommands(commands.CommandBase):
 
         try:
             passwd = self._decode_password(data)
-            self._change_password(passwd)
+
+            os_mod = self.detect_os()
+            if os_mod and not self.kwargs.get('testmode', False):
+                os_mod.password.change_password(passwd)
+            else:
+                self._change_password(passwd)
         except PasswordError, e:
             return e.get_response()
 
@@ -296,7 +323,7 @@ def _create_temp_password_file(user, password, filename):
 def set_password(user, password):
     """Set the password for a particular user"""
 
-    INVALID = 0
+    INVALID = 0  # NOQA
     PWD_MKDB = 1
     RENAME = 2
 

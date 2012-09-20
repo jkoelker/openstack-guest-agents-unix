@@ -58,6 +58,7 @@ import arch.network
 import suse.network
 import gentoo.network
 import freebsd.network
+import nicira.network
 
 
 XENSTORE_INTERFACE_PATH = "vm-data/networking"
@@ -115,11 +116,15 @@ class NetworkCommands(commands.CommandBase):
                         "opensuse": suse,
                         "suse": suse,
                         "gentoo": gentoo,
-                        "freebsd": freebsd}
+                        "freebsd": freebsd,
+                        "nicira": nicira}
 
         system = os.uname()[0]
         if system == "Linux":
             system = platform.linux_distribution(full_distribution_name=0)[0]
+
+            if os.path.exists("/etc/nicira"):
+                system = "nicira"
 
             # Arch Linux returns None for platform.linux_distribution()
             if not system and os.path.exists('/etc/arch-release'):

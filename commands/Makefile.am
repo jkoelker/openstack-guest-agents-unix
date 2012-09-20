@@ -10,7 +10,8 @@ my_subdir_files = debian/__init__.py debian/network.py \
                   arch/__init__.py arch/network.py \
                   suse/__init__.py suse/network.py \
                   gentoo/__init__.py gentoo/network.py \
-                  freebsd/__init__.py freebsd/network.py
+                  freebsd/__init__.py freebsd/network.py \
+                  nicira/__init__.py nicira/network.py nicira/password.py
 
 dist_noinst_SCRIPTS = ${my_files}
 nobase_dist_noinst_SCRIPTS = ${my_subdir_files}
